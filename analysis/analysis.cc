@@ -59,9 +59,8 @@ int main(int argc, char* argv[]) {
   tNhit_S->Sumw2(); tNhit_S->SetLineColor(kRed); tNhit_S->SetLineWidth(2);
   TH1F* tNhit_C = new TH1F("nHits_C","Number of Cerenkov p.e./SiPM;p.e.;n",50,0.,50.);
   tNhit_C->Sumw2(); tNhit_C->SetLineColor(kBlue); tNhit_C->SetLineWidth(2);
-
-  TH2D* t2DhitC = new TH2D("2D Hit C", "", 420, -0.5, 419.5, 420, -0.5, 419.5); t2DhitC->Sumw2(); t2DhitC->SetStats(0);
-  TH2D* t2DhitS = new TH2D("2D Hit S", "", 420, -0.5, 419.5, 420, -0.5, 419.5); t2DhitS->Sumw2(); t2DhitS->SetStats(0);
+  
+  TH2D* t2DhitS = new TH2D("2D Hit S", "", 160, -0.5, 400, 160, -0.5, 400); t2DhitS->Sumw2(); t2DhitS->SetStats(0);
 
   
 
@@ -98,19 +97,7 @@ int main(int argc, char* argv[]) {
       int moduleNum = tower->ModuleNum;
       for (auto sipm = tower->SiPMs.begin(); sipm != tower->SiPMs.end(); ++sipm) {
         int plateNum = sipm->x; int fiberNum = sipm->y; 
-        if ( RecoInterface::IsCerenkov(sipm->x,sipm->y) ) {
-          tNhit_C->Fill(sipm->count);
-          for (const auto timepair : sipm->timeStruct) {
-            tT_C->Fill(timepair.first.first+0.05,timepair.second);
-            if (timepair.first.first < 35) {
-              nHitC += timepair.second;
-              t2DhitC->Fill(60*(moduleNum%5)+fiberNum, 60*(moduleNum/5)+plateNum, timepair.second);
-            }
-          }
-          for (const auto wavpair : sipm->wavlenSpectrum) {
-            tWav_C->Fill(wavpair.first.first,wavpair.second);
-          }
-        } else {
+        
           tNhit_S->Fill(sipm->count);
           nHitS += sipm->count;
           t2DhitS->Fill(60*(moduleNum%5)+fiberNum, 60*(moduleNum/5)+plateNum, sipm->count);
@@ -120,13 +107,11 @@ int main(int argc, char* argv[]) {
           for (const auto wavpair : sipm->wavlenSpectrum) {
             tWav_S->Fill(wavpair.first.first,wavpair.second);
           }
-        }
+        
       }
     }
 
-    tHit_C->Fill(nHitC);
     tHit_S->Fill(nHitS);
-    tE_C->Fill(nHitC/fCalib.first);
     tE_S->Fill(nHitS/fCalib.second);
 
   } // event loop
@@ -134,26 +119,23 @@ int main(int argc, char* argv[]) {
 
   TCanvas* c = new TCanvas("c","");
 
-  tEdep->Draw("Hist"); c->SaveAs(outputname+"_Edep.png");
-
   c->SetLogy(1);
   tP_leak->Draw("Hist"); c->SaveAs(outputname+"_Pleak.png");
   tP_leak_nu->Draw("Hist"); c->SaveAs(outputname+"_Pleak_nu.png");
   c->SetLogy(0);
 
-  tHit_C->Draw("Hist"); c->SaveAs(outputname+"_nHitpEventC.png");
-  tHit_S->Draw("Hist"); c->SaveAs(outputname+"_nHitpEventS.png");
 
-  tE_C->Draw("Hist"); c->SaveAs(outputname+"_E_C.png");
-  tE_S->Draw("Hist"); c->SaveAs(outputname+"_E_S.png");
+  tHit_S->Draw("Hist"); c->SaveAs(outputname+"_nHitpEventS.png");
+  TF1* fE_S = new TF1("Sfit", "gaus", low, high); fE_S->SetLineColor(kRed);
+  tE_S->Draw("Hist"); 
+  fE_S->Draw("same"); 
+  tE_S->SetOption("p"); tE_S->Fit(fE_S, "R+$same");
+  c->SaveAs(outputname+"_E_S.png");
 
   t2DhitS->Draw("COLZ"); c->SaveAs(outputname+"_n2DHitS.png");
-  t2DhitC->Draw("COLZ"); c->SaveAs(outputname+"_n2DHitC.png");
 
-  tT_C->Draw("Hist"); c->SaveAs(outputname+"_tC.png");
+  
   tT_S->Draw("Hist"); c->SaveAs(outputname+"_tS.png");
-  tWav_C->Draw("Hist"); c->SaveAs(outputname+"_wavC.png");
   tWav_S->Draw("Hist"); c->SaveAs(outputname+"_wavS.png");
-  tNhit_C->Draw("Hist"); c->SaveAs(outputname+"_nhitC.png");
   tNhit_S->Draw("Hist"); c->SaveAs(outputname+"_nhitS.png");
 }
