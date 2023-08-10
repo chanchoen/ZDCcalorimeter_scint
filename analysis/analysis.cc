@@ -31,10 +31,6 @@ int main(int argc, char* argv[]) {
   RootInterface<DRsimInterface::DRsimEventData>* drInterface = new RootInterface<DRsimInterface::DRsimEventData>(std::string(filename), false);
   drInterface->GetChain("DRsim");
 
-  TH1F* tEdep = new TH1F("totEdep","Total Energy deposit;MeV;Evt",100,low*1000.,high*1000.);
-  tEdep->Sumw2(); tEdep->SetLineColor(kRed); tEdep->SetLineWidth(2);
-  TH1F* tHit_C = new TH1F("Hit_C","# of p.e. of Cerenkov ch.;# of p.e.;Evt",200,0,3000*(truth/20));
-  tHit_C->Sumw2(); tHit_C->SetLineColor(kBlue); tHit_C->SetLineWidth(2);
   TH1F* tHit_S = new TH1F("Hit_S","# of p.e. of Scintillation ch.;# of p.e.;Evt",200,0,40000*(truth/20));
   tHit_S->Sumw2(); tHit_S->SetLineColor(kRed); tHit_S->SetLineWidth(2);
   TH1F* tP_leak = new TH1F("Pleak","Momentum leak;MeV;Evt",100,0.,1000.*high);
@@ -44,21 +40,13 @@ int main(int argc, char* argv[]) {
 
   TH1F* tE_S = new TH1F("E_S","Scintillation Energy;GeV;Evt",100,low,high);
   tE_S->Sumw2(); tE_S->SetLineColor(kRed); tE_S->SetLineWidth(2);
-  TH1F* tE_C = new TH1F("E_C","Cerenkov Energy;GeV;Evt",100,low,high);
-  tE_C->Sumw2(); tE_C->SetLineColor(kBlue); tE_C->SetLineWidth(2);
 
-  TH1F* tT_C = new TH1F("time_C","Cerenkov time;ns;p.e.",600,10.,70.);
-  tT_C->Sumw2(); tT_C->SetLineColor(kBlue); tT_C->SetLineWidth(2);
   TH1F* tT_S = new TH1F("time_S","Scint time;ns;p.e.",600,10.,70.);
   tT_S->Sumw2(); tT_S->SetLineColor(kRed); tT_S->SetLineWidth(2);
   TH1F* tWav_S = new TH1F("wavlen_S","Scint wavelength;nm;p.e.",120,300.,900.);
   tWav_S->Sumw2(); tWav_S->SetLineColor(kRed); tWav_S->SetLineWidth(2);
-  TH1F* tWav_C = new TH1F("wavlen_C","Cerenkov wavelength;nm;p.e.",120,300.,900.);
-  tWav_C->Sumw2(); tWav_C->SetLineColor(kBlue); tWav_C->SetLineWidth(2);
   TH1F* tNhit_S = new TH1F("nHits_S","Number of Scint p.e./SiPM;p.e.;n",200,0.,200.);
   tNhit_S->Sumw2(); tNhit_S->SetLineColor(kRed); tNhit_S->SetLineWidth(2);
-  TH1F* tNhit_C = new TH1F("nHits_C","Number of Cerenkov p.e./SiPM;p.e.;n",50,0.,50.);
-  tNhit_C->Sumw2(); tNhit_C->SetLineColor(kBlue); tNhit_C->SetLineWidth(2);
   
   TH2D* t2DhitS = new TH2D("2D Hit S", "", 160, -0.5, 400, 160, -0.5, 400); t2DhitS->Sumw2(); t2DhitS->SetStats(0);
 
@@ -100,7 +88,7 @@ int main(int argc, char* argv[]) {
         
           tNhit_S->Fill(sipm->count);
           nHitS += sipm->count;
-          t2DhitS->Fill(60*(moduleNum%5)+fiberNum, 60*(moduleNum/5)+plateNum, sipm->count);
+          t2DhitS->Fill(2.5 * fiberNum, 2.5 * plateNum, sipm->count);
           for (const auto timepair : sipm->timeStruct) {
             tT_S->Fill(timepair.first.first+0.05,timepair.second);
           }
